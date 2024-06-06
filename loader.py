@@ -276,6 +276,66 @@ class OASIS(Dataset):
 
     def __len__(self):
         return len(self.index_combination)
+    
+class BCP(Dataset):
+    def __init__(self, root='./data_midslice/affine-aligned-midslice/', transform=None, trainvaltest='train', opt = None):
+
+        self.trainvaltest = trainvaltest
+        self.imgdir = os.path.join(root, 'images/')
+        self.targetname = opt.targetname
+
+        if 'demoname' in opt:
+            meta = pd.read_csv(os.path.join(root, opt.demoname), index_col=0)
+        else:
+            meta = pd.read_csv(os.path.join(root, 'demo-healthy-longitudinal.csv'), index_col=0)
+
+        meta = meta[meta.trainvaltest == trainvaltest].reset_index()
+        IDunq = np.unique(meta['Site-ID'])
+        index_combination = np.empty((0, 2))
+        for sid in IDunq:
+            indices = np.where(meta['Site-ID'] == sid)[0]
+            ### all possible pairs
+            tmp_combination = np.array(
+                np.meshgrid(np.array(range(len(indices))), np.array(range(len(indices))))).T.reshape(-1, 2)
+            index_combination = np.append(index_combination, indices[tmp_combination], 0)
+
+        if opt == None:
+            img_height, img_width = [320, 300]
+        else:
+            img_height, img_width = opt.image_size
+
+        self.resize = transforms.Compose([
+            transforms.Resize((img_height, img_width), Image.BICUBIC),
+            transforms.ToTensor(),
+        ])
+
+        self.index_combination = index_combination
+        self.transform = transform
+        self.demo = meta
+
+    def __getitem__(self, index):
+        index1, index2 = self.index_combination[index]
+        target1, target2 = self.demo[self.targetname][index1], self.demo[self.targetname][index2]
+        img1 = Image.open(os.path.join(self.imgdir, self.demo.fname[index1]))
+        img1 = self.resize(img1) 
+        img2 = Image.open(os.path.join(self.imgdir, self.demo.fname[index2]))
+        img2 = self.resize(img2) 
+
+        if self.transform:
+            augmentation = transforms.Compose([
+                transforms.RandomApply(torch.nn.ModuleList(
+                    [transforms.RandomAffine(degrees=(-10, 10), translate=(0.05,0.05), #scale=(0.9, 1.1),
+                                             interpolation=InterpolationMode.BILINEAR)]),
+                    p=0.5),
+            ])
+
+            img1 = augmentation(img1)
+            img2 = augmentation(img2)
+
+        return [np.array(img1), target1], [np.array(img2), target2]
+
+    def __len__(self):
+        return len(self.index_combination)
 
 class OASISregression(Dataset):
     def __init__(self, root='/nfs04/data/OASIS3/aligned-midslice', transform=None, trainvaltest='train', opt = None):

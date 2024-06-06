@@ -1,2 +1,5 @@
 /.idea/
 /__pycache__/
+/data_midslice/
+/result-model/
+/result-weightedCAM/

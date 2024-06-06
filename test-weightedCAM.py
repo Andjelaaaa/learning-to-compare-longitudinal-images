@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from PIL import Image
 from loader import *
 from model import *
 from utils import *
@@ -8,6 +9,8 @@ import os
 import numpy as np
 import torch
 from pytorch_grad_cam.utils.image import show_cam_on_image, scale_cam_image
+import matplotlib
+matplotlib.use('Agg')
 import cv2
 
 cuda = True
@@ -39,6 +42,15 @@ def get_cam_image(weighted_activations, input):
     cam = cam - cam_min
     cam_max = np.max(cam)
     cam = cam / (1e-7 + cam_max)
+
+    # # Convert the first element of cam to a PIL image
+    # image = Image.fromarray((cam[0] * 255).astype(np.uint8))
+
+    # # Resize the image
+    # resized_image = image.resize(targetsize[::-1], Image.ANTIALIAS)
+
+    # # Convert back to NumPy array
+    # scaled = np.array(resized_image) / 255.0 
     scaled = cv2.resize(cam[0], targetsize[::-1])
     inputvis = input.numpy().transpose(1, 2, 0)
     inputvis = np.minimum(np.maximum(inputvis, 0), 1)
@@ -328,8 +340,8 @@ def visualize_crosssectional_regression(loader, opt, n_channels, subjidname, sav
     os.makedirs(f'{vissavedir}', exist_ok=True)
 
 dict_dataloader = {'starmen': STARMEN, 'tumor': TUMOR,
-                   'embryo': EMBRYO, 'oasis': OASIS}
-dict_subjectname = {'embryo':'embryoname', 'tumor': 'Subject ID', 'starmen': 'id','oasis': 'subject-id'}
+                   'embryo': EMBRYO, 'oasis': OASIS, 'bcp': BCP}
+dict_subjectname = {'embryo':'embryoname', 'tumor': 'Subject ID', 'starmen': 'id','oasis': 'subject-id', 'bcp': 'Site-ID'}
 
 
 parser = argparse.ArgumentParser()
@@ -351,8 +363,9 @@ opt.image_size = image_size
 if __name__ == "__main__":
 
     # ## -- visualize PaIRNet
+    # visualize_PaIRNet(dict_dataloader[opt.dataname], opt, opt.image_channel, dict_subjectname[opt.dataname], opt.dataname, all_or_t0='all')
+    # loader, opt, n_channels, subjidname, savename, overwrite = False, all_or_t0 = 't0'
     visualize_PaIRNet(dict_dataloader[opt.dataname], opt, opt.image_channel, dict_subjectname[opt.dataname], opt.dataname, all_or_t0='all')
-
     # ## -- visualize crosssectional regression
     # visualize_crosssectional_regression(dict_dataloader[opt.dataname], opt, opt.image_channel, dict_subjectname[opt.dataname],  opt.datanam)
 

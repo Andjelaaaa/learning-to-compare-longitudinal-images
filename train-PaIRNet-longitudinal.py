@@ -101,14 +101,15 @@ def train(network, loader, opt, selfsupervised=True):
 
             # Model inputs
             I1, I2 = batch
+            # input1.shape = [8, 1, 300, 320], target1.shape = [8]
             input1, target1 = I1
             input2, target2 = I2
 
             optimizer.zero_grad()
 
             # Feature Network
-            featureDiff = network(input1.type(Tensor), input2.type(Tensor))
-            targetdiff = ((target1 - target2)[:, None]).type(Tensor)
+            featureDiff = network(input1.type(Tensor), input2.type(Tensor)) # [8,1]
+            targetdiff = ((target1 - target2)[:, None]).type(Tensor) # [8,1]
             if selfsupervised:
                 targetdiff[targetdiff > 0] = 1
                 targetdiff[targetdiff == 0] = 0.5
@@ -368,7 +369,7 @@ image_size = [int(item) for item in opt.image_size.split(',')]
 opt.image_size = image_size
 
 dict_dataloader = {'starmen': STARMEN, 'tumor': TUMOR,
-                   'embryo': EMBRYO, 'oasis': OASIS}
+                   'embryo': EMBRYO, 'oasis': OASIS, 'bcp': BCP}
 
 if __name__ == "__main__":
 
@@ -381,6 +382,7 @@ if __name__ == "__main__":
                         f'PaIRNet-supervised'
 
     network = Resnet18Diff(channels=opt.image_channel)
+    
     train(network, dict_dataloader[opt.dataname], opt, selfsupervised=opt.selfsupervised)
 
     #
