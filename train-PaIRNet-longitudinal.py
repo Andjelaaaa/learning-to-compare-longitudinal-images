@@ -88,8 +88,8 @@ def train(network, loader, opt, selfsupervised=True):
         if total_iter > opt.max_iters:
             break
 
-        if earlystoppingcount > 5:
-            break
+        # if earlystoppingcount > 5:
+        #     break
 
         epoch_total_loss = []
         epoch_step_time = []
@@ -155,7 +155,7 @@ def train(network, loader, opt, selfsupervised=True):
                 _log_stats([np.mean(epoch_total_acc)], ['train_acc'], total_iter, writer)
 
                 network.eval()
-                valloss_total = [];
+                valloss_total = []
                 epoch_val_acc = []
                 for valstep, batch in enumerate(loader_val):
                     I1, I2 = batch

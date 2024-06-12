@@ -21,6 +21,8 @@ import glob
 from sklearn.metrics import accuracy_score as acc
 from sklearn.metrics import roc_auc_score as auc
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 from scipy.io import loadmat
 # import mat73
 from scipy.stats import pearsonr
@@ -62,7 +64,7 @@ def test_PaIRNet(network, loader, savedmodelname, opt, gt_target, subjidname, ov
         result = pd.read_csv(resultfilename)
         loader_test = torch.utils.data.DataLoader(
             loader(root=opt.image_dir, trainvaltest='test', transform=False, opt=opt),
-            batch_size=64, shuffle=False, num_workers=opt.num_workers)
+            batch_size=8, shuffle=False, num_workers=opt.num_workers)
 
     if run:
         cuda = True
@@ -83,7 +85,7 @@ def test_PaIRNet(network, loader, savedmodelname, opt, gt_target, subjidname, ov
 
         loader_test = torch.utils.data.DataLoader(
             loader(root=opt.image_dir, trainvaltest='test', transform=False, opt=opt),
-            batch_size=64, shuffle=False, num_workers=opt.num_workers)
+            batch_size=8, shuffle=False, num_workers=opt.num_workers)
 
         targetdiffvalue = np.empty((0, 1))
         featurevalue = np.empty((0, 1))
@@ -140,7 +142,7 @@ def test_crosssectional_regression(network, loader, savedmodelname, opt, overwri
         result = pd.read_csv(resultfilename)
         loader_test = torch.utils.data.DataLoader(
             loader(root=opt.image_dir, trainvaltest='test', transform=False, opt=opt),
-            batch_size=64, shuffle=False, num_workers=opt.num_workers)
+            batch_size=8, shuffle=False, num_workers=opt.num_workers)
 
     if run:
         cuda = True
@@ -161,7 +163,7 @@ def test_crosssectional_regression(network, loader, savedmodelname, opt, overwri
 
         loader_test = torch.utils.data.DataLoader(
             loader(root=opt.image_dir, trainvaltest='test', transform=False, opt=opt),
-            batch_size=64, shuffle=False, num_workers=opt.num_workers)
+            batch_size=8, shuffle=False, num_workers=opt.num_workers)
 
         targetvalue = np.empty((0, 1))
         featurevalue = np.empty((0, 1))
@@ -191,8 +193,8 @@ def test_crosssectional_regression(network, loader, savedmodelname, opt, overwri
 
 
 dict_dataloader = {'starmen': STARMEN, 'tumor': TUMOR,
-                   'embryo': EMBRYO, 'oasis': OASIS}
-dict_subjectname = {'embryo':'embryoname', 'tumor': 'Subject ID', 'starmen': 'id','oasis': 'subject-id'}
+                   'embryo': EMBRYO, 'oasis': OASIS, 'bcp': BCP}
+dict_subjectname = {'embryo':'embryoname', 'tumor': 'Subject ID', 'starmen': 'id','oasis': 'subject-id', 'bcp': 'Site-ID'}
 
 
 parser = argparse.ArgumentParser()
